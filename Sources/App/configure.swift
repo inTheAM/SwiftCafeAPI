@@ -31,8 +31,6 @@ public func configure(_ app: Application) throws {
         database: Environment.get("DATABASE_NAME") ?? databaseName
     ), as: .psql)
     
-    app.http.server.configuration.port = 8090
-//    app.http.server.configuration.hostname = "api.swiftcafe.local"
     
     try app.autoRevert().wait()
     

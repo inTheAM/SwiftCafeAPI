@@ -47,7 +47,7 @@ public struct UsersController: RouteCollection {
     /// Checks whether an email address is associated with any user in the database. 
     /// - Parameter req: The request received.
     /// - Returns: A RequestResult representing an available or unavailable email address
-    public func emailAvailabilityHandler(_ req: Request) async throws -> RequestResult.APIResult {
+    public func emailAvailabilityHandler(_ req: Request) async throws -> EmailCheckResult.APIResult {
         // Getting the email address from the request body
         let emailCheckData = try req.content.decode(EmailCheckData.self)
         
@@ -56,13 +56,13 @@ public struct UsersController: RouteCollection {
             .filter(\.$email == emailCheckData.email)
             .first()
         
-        // If a user was found, return a failure value
-        guard user == nil else {
-            return RequestResult.failure.convertToResult()
+        let result: EmailCheckResult
+        if user == nil {
+            result = .init(isAvailable: true)
+        } else {
+            result = .init(isAvailable: false)
         }
-        
-        // Otherwise return a success to indicate the email address is available
-        return RequestResult.failure.convertToResult()
+        return result.convertToResult()
     }
     
     /// Creates an account, a cart and a session for a new user.
@@ -133,7 +133,7 @@ public struct UsersController: RouteCollection {
     /// Ends the active session for the user by deleting the token saved on the database.
     /// - Parameter req: The request received
     /// - Returns: A RequestResult indicating whether the sign-out operation was successful or not.
-    public func signOutHandler(_ req: Request) async throws -> RequestResult.APIResult {
+    public func signOutHandler(_ req: Request) async throws -> HTTPStatus {
         let user = try req.auth.require(User.self)
         guard let userID = try? user.requireID() else {
             throw Abort(.internalServerError)
@@ -147,13 +147,13 @@ public struct UsersController: RouteCollection {
             
         try await  savedToken.delete(on: req.db)
         
-        return RequestResult.success.convertToResult()
+        return HTTPStatus.ok
     }
     
     /// Deletes the user's account.
     /// - Parameter req: The request received.
     /// - Returns: A RequestResult indicating whether the account deletion was successful or not.
-    public func deleteHandler(_ req: Request) async throws -> RequestResult.APIResult {
+    public func deleteHandler(_ req: Request) async throws -> HTTPStatus {
         let reqUser = try req.auth.require(User.self)
         let userID = try reqUser.requireID()
         
@@ -167,7 +167,7 @@ public struct UsersController: RouteCollection {
         try await savedUser.delete(on: req.db)
         
         // Returning a success result
-        return RequestResult.success.convertToResult()
+        return HTTPStatus.ok
     }
     
     /// Retrieves a user's details.
