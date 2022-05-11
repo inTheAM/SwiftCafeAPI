@@ -7,20 +7,24 @@
 
 import Fluent
 
-struct CreateOptionGroup: Migration {
-    func prepare(on database: Database) -> EventLoopFuture<Void> {
-        database.schema("OptionGroups")
+/// # Creates/Removes the `"OptionGroups"` table in the database.
+public struct CreateOptionGroup: Migration {
+    
+    typealias Fields = OptionGroup.Fields
+    
+    public func prepare(on database: Database) -> EventLoopFuture<Void> {
+        database.schema(OptionGroup.schema)
             .id()
-            .field("Name", .string, .required)
-            .field("CreatedOn", .datetime, .required)
-            .field("LastModifiedOn", .datetime, .required)
-            .field("FoodID", .uuid, .required, .references("Food", "id", onDelete: .cascade))
+            .field(Fields.name.key, .string, .required)
+            .field(Fields.createdOn.key, .datetime, .required)
+            .field(Fields.lastModifiedOn.key, .datetime, .required)
+            .field(Fields.foodID.key, .uuid, .required, .references(Food.schema, .id, onDelete: .cascade))
             .unique(on: .id)
             .create()
     }
     
-    func revert(on database: Database) -> EventLoopFuture<Void> {
-        database.schema("OptionGroups")
+    public func revert(on database: Database) -> EventLoopFuture<Void> {
+        database.schema(OptionGroup.schema)
             .delete()
     }
 }

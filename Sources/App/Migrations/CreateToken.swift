@@ -7,19 +7,23 @@
 
 import Fluent
 
-struct CreateToken: Migration {
-    func prepare(on database: Database) -> EventLoopFuture<Void> {
-        return database.schema("Tokens")
+/// # Creates/Removes the `"Tokens"` table in the database.
+public struct CreateToken: Migration {
+    
+    public typealias Fields = Token.Fields
+    
+    public func prepare(on database: Database) -> EventLoopFuture<Void> {
+        return database.schema(Token.schema)
             .id()
-            .field("Value", .string, .required)
-            .field("CreatedOn", .datetime, .required)
-            .field("LastModifiedOn", .datetime, .required)
-            .field("UserID", .uuid, .required, .references("Users", "id", onDelete: .cascade))
-            .unique(on: "UserID")
+            .field(Fields.value.key, .string, .required)
+            .field(Fields.createdOn.key, .datetime, .required)
+            .field(Fields.lastModifiedOn.key, .datetime, .required)
+            .field(Fields.userID.key, .uuid, .required, .references(User.schema, .id, onDelete: .cascade))
+            .unique(on: .id, Fields.userID.key)
             .create()
     }
     
-    func revert(on database: Database) -> EventLoopFuture<Void> {
+    public func revert(on database: Database) -> EventLoopFuture<Void> {
         return database.schema("Tokens")
             .delete()
     }

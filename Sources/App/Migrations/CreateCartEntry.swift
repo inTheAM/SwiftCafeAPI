@@ -6,22 +6,25 @@
 //
 
 import Fluent
-import Vapor
 
-struct CreateCartEntry: Migration {
-    func prepare(on database: Database) -> EventLoopFuture<Void> {
-        return database.schema("CartEntries")
+/// Creates/Removes the `CartEntries` table in the database.
+public struct CreateCartEntry: Migration {
+    typealias Fields = CartEntry.Fields
+    
+    public func prepare(on database: Database) -> EventLoopFuture<Void> {
+        return database.schema(CartEntry.schema)
             .id()
-            .field("Quantity", .int, .required)
-            .field("CreatedOn", .datetime, .required)
-            .field("LastModifiedOn", .datetime, .required)
-            .field("CartID", .uuid, .required, .references("Carts", "id", onDelete: .cascade))
-            .field("FoodID", .uuid, .required, .references("Food", "id", onDelete: .cascade))
+            .field(Fields.quantity.key, .int, .required)
+            .field(Fields.createdOn.key, .datetime, .required)
+            .field(Fields.lastModifiedOn.key, .datetime, .required)
+            .field(Fields.cartID.key, .uuid, .required, .references(Cart.schema, .id, onDelete: .cascade))
+            .field(Fields.foodID.key, .uuid, .required, .references(Food.schema, .id, onDelete: .cascade))
+            .unique(on: .id)
             .create()
     }
     
-    func revert(on database: Database) -> EventLoopFuture<Void> {
-        return database.schema("CartEntries")
+    public func revert(on database: Database) -> EventLoopFuture<Void> {
+        return database.schema(CartEntry.schema)
             .delete()
     }
 }

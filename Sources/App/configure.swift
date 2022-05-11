@@ -36,6 +36,7 @@ public func configure(_ app: Application) throws {
     
     try app.autoRevert().wait()
     
+    // Running migrations
     app.migrations.add(CreateUser())
     app.migrations.add(CreateToken())
     app.migrations.add(CreateCart())
@@ -44,7 +45,11 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateCartEntry())
     app.migrations.add(CreateOptionGroup())
     app.migrations.add(CreateOption())
+    app.migrations.add(CreateOptionEntry())
     app.migrations.add(CreateMenu())
+    
+    #warning("Dummy Data")
+    app.migrations.add(CreateDummyUser())
     
     app.logger.logLevel = .debug
     try app.autoMigrate().wait()

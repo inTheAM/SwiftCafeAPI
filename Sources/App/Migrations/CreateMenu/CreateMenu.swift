@@ -8,91 +8,20 @@
 import Fluent
 import Vapor
 
-extension Food {
-    func addChickenSizeOptionGroup(on database: Database) {
-        let chickenSizeOptionGroup = OptionGroup(name: "Chicken size", foodID: self.id!)
-        _ = chickenSizeOptionGroup.save(on: database)
-        
-        let quarterChicken = Option(name: "Quarter", priceDifference: 0, optionGroupID: chickenSizeOptionGroup.id!).save(on: database)
-        
-        let halfChicken = Option(name: "Half", priceDifference: 3, optionGroupID: chickenSizeOptionGroup.id!).save(on: database)
-        
-        let fullChicken = Option(name: "Full", priceDifference: 6, optionGroupID: chickenSizeOptionGroup.id!).save(on: database)
-    }
-    
-    func addWingsOptionGroup(on database: Database) {
-        let wingsOptionGroup = OptionGroup(name: "Serving size", foodID: self.id!)
-        _ = wingsOptionGroup.save(on: database)
-        
-        let five = Option(name: "Five winglets", priceDifference: 0, optionGroupID: wingsOptionGroup.id!)
-        _ = five.save(on: database)
-        
-        let ten = Option(name: "Ten winglets", priceDifference: 3.49, optionGroupID: wingsOptionGroup.id!)
-        _ = ten.save(on: database)
-    }
-    
-    func addChipsSizeOptionGroup(on database: Database) {
-        let chipsSizeOptionGroup = OptionGroup(name: "Chips size", foodID: self.id!)
-        _ = chipsSizeOptionGroup.save(on: database)
-        
-        let regular = Option(name: "Regular", priceDifference: 0, optionGroupID: chipsSizeOptionGroup.id!)
-        _ = regular.save(on: database)
-        
-        let large = Option(name: "Large", priceDifference: 1, optionGroupID: chipsSizeOptionGroup.id!)
-        _ = large.save(on: database)
-        
-        let jumbo = Option(name: "Jumbo", priceDifference: 1.5, optionGroupID: chipsSizeOptionGroup.id!)
-        _ = jumbo.save(on: database)
-    }
-    
-    func addRiceOptionGroup(on database: Database) {
-        let riceOptionGroup = OptionGroup(name: "Chips size", foodID: self.id!)
-        _ = riceOptionGroup.save(on: database)
-        
-        let regular = Option(name: "Regular", priceDifference: 0, optionGroupID: riceOptionGroup.id!)
-        _ = regular.save(on: database)
-        
-        let spicy = Option(name: "Spicy", priceDifference: 0.49, optionGroupID: riceOptionGroup.id!)
-        _ = spicy.save(on: database)
-    }
-    
-    func addSpiceOptionGroup(on database: Database) {
-        let spiceOptionGroup = OptionGroup(name: "Spiciness", foodID: self.id!)
-        _ = spiceOptionGroup.save(on: database)
-        
-        let plain = Option(name: "Plain - no spice", priceDifference: 0, optionGroupID: spiceOptionGroup.id!)
-        _ = plain.save(on: database)
-        
-        let spicy = Option(name: "Spicy - mild", priceDifference: 0, optionGroupID: spiceOptionGroup.id!)
-        _ = spicy.save(on: database)
-        
-        let hot = Option(name: "Spicy - HOT", priceDifference: 0, optionGroupID: spiceOptionGroup.id!)
-        _ = hot.save(on: database)
-    }
-    
-    func addSidesOptionGroup(on database: Database) {
-        let sidesOptionGroup = OptionGroup(name: "Sides", foodID: self.id!)
-        _ = sidesOptionGroup.save(on: database)
-        
-        let coleslaw = Option(name: "Coleslaw", priceDifference: 1, optionGroupID: sidesOptionGroup.id!)
-        _ = coleslaw.save(on: database)
-        
-        let salad = Option(name: "Garden salad", priceDifference: 2, optionGroupID: sidesOptionGroup.id!)
-        _ = salad.save(on: database)
-        
-        let periperiMayo = Option(name: "Periperi mayo", priceDifference: 1, optionGroupID: sidesOptionGroup.id!)
-        _ = periperiMayo.save(on: database)
-    }
-}
-
+/// Creates the menu for our hypothetical restaurant
 struct CreateMenu: Migration {
     func prepare(on database: Database) -> EventLoopFuture<Void> {
+        
         // CHICKEN SECTION
+        // Creating the section
         let chicken = MenuSection(name: "Chicken", details: "Slowly marinated and flame-grilled to perfection")
         _ = chicken.save(on: database)
         
+        // Creating the meals in this section
         let chickenOnly = Food(name: "Chicken", details: "Plain chicken of your chosen size", price: 3.99, sectionID: chicken.id!)
         _ = chickenOnly.save(on: database)
+        
+        // Adding options to the meal
         chickenOnly.addChickenSizeOptionGroup(on: database)
         chickenOnly.addSpiceOptionGroup(on: database)
         chickenOnly.addSidesOptionGroup(on: database)
@@ -250,6 +179,8 @@ struct CreateMenu: Migration {
     }
     
     func revert(on database: Database) -> EventLoopFuture<Void> {
+        
+        // Removing the sections from the database
         _ = MenuSection.query(on: database)
             .filter(\.$name == "Chicken")
             .delete()
