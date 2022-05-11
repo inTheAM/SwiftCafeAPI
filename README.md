@@ -42,18 +42,21 @@ You can now connect on the default address:
 ## Contributing
 Take a look at the issues/project tabs for new issues or to-dos.
 Here are a few ways you can improve this project:
-    - Adding images for each food.
-    - Adding/Improving documentation.
-    - Refactoring and breaking down large methods.
-    - Adding/Improving unit tests.
-    - Improving variable/function naming.
-    - Improving error handling / endpoint return types.
-    - Suggesting new features.
-    - Improving existing features.
-    - Improving/Extending this README.
+- Adding images for each food.
+- Adding/Improving documentation.
+- Refactoring and breaking down large methods.
+- Adding/Improving unit tests.
+- Improving variable/function naming.
+- Improving error handling / endpoint return types.
+- Suggesting new features.
+- Improving existing features.
+- Improving/Extending this README.
 
 Try to keep your PRs small and limited to specific features / bug fixes.
-Make sure your code is well documented. This is a learning resource and should be accessible to all levels.
+
+Make sure your code is well documented. 
+
+This is a learning resource and should be accessible to all levels.
 
 <br>
 <br>
