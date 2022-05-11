@@ -35,7 +35,7 @@ Once the database is running, open another terminal window/tab, still in the pro
 This will build and run the vapor application.
 You can now connect on the default address:
         
-        `http://localhost:8080/api`
+        http://localhost:8080/api
 <br>
 <br>
 
