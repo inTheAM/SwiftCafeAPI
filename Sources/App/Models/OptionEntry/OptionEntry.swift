@@ -39,4 +39,8 @@ public final class OptionEntry: Model {
     /// Conformance to `FluentKit.Model`.
     public init(){}
     
+    init(option: Option, cartEntry: CartEntry) throws {
+        self.$cartEntry.id = try cartEntry.requireID()
+        self.$option.id = try option.requireID()
+    }
 }

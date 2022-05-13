@@ -55,6 +55,9 @@ public struct MenuController: RouteCollection {
         return sections.convertToResult()
     }
     
+    /// Handles a `GET` request for the options for a selected food.
+    /// - Parameter req: The request received.
+    /// - Returns: An array of option groups
     public func getOptionsHandler(_ req: Request) async throws -> NetworkResponse<[OptionGroup.Payload]> {
         let _ = try req.auth.require(User.self)
         

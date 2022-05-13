@@ -27,7 +27,7 @@ public extension Cart {
     /// Converts a `Cart` model to a `Payload`.
     /// - Parameter contents: The cart entries to be placed in the cart.
     /// - Returns: The `Payload` form of the user's cart.
-    func convertToPayload(contents: [CartEntry.Payload] = []) throws -> Payload {
+    func convertToPayload(contents: [CartEntry.Payload]) -> Payload {
         return Payload(id: id, userID: $user.id, contents: contents)
     }
 }
