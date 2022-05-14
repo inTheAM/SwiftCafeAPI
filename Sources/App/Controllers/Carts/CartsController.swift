@@ -119,11 +119,17 @@ public struct CartsController: RouteCollection {
                             return req.eventLoop.future(error:  Abort(.internalServerError))
                         }
                         
-                        // Saving the cart entry to the database
-                        return entry.save(on: req.db).and(optionQueries)
+                        // Saving the cart entry to the database.
+                        // The save operation is chained with the option queries so
+                        // that option entries can be created using the cart entry id, which is
+                        // only set on save.
+                        // Once all save operations are complete, the cart entry is sent back to
+                        // the user showing the selected options.
+                        return entry.save(on: req.db)
+                            .and(optionQueries)
                             .map { _, options in
                                 
-                                // Saving the option entries
+                                // Creating option entries and saving to the database
                             options.map { option  in
                                 try! OptionEntry(option: option, cartEntry: entry)
                                     .save(on: req.db)
@@ -132,7 +138,7 @@ public struct CartsController: RouteCollection {
                                     }
                             }
                         }.flatMap { options in
-                            // With everything saved, return convert the selected options to payloads
+                            // With everything saved, convert the selected options to payloads
                             options
                                 .map { options in
                                     options.map { $0.convertToPayload() }
@@ -143,7 +149,6 @@ public struct CartsController: RouteCollection {
                                             entry
                                                 .convertToPayload(food: food.convertToPayload(), options: optionPayloads)
                                                 .convertToResult()
-                                        
                                 }
                         }
                     }

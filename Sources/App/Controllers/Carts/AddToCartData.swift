@@ -9,7 +9,7 @@ import Vapor
 
 public extension CartsController {
     
-    public typealias Quantity = Int
+    typealias Quantity = Int
     /// The data sent by a client to add a cart entry to a user's cart.
     struct AddToCartData: Content {
         
