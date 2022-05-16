@@ -20,6 +20,7 @@ public struct CartsController: RouteCollection {
         protectedRoute.get(use: getHandler)
         protectedRoute.post(use: addItemHandler)
         protectedRoute.delete(use: deleteItemHandler)
+        protectedRoute.delete("clear", use: clearContentsHandler)
     }
     
     /// Handles a `GET` request for the user's cart.
@@ -160,33 +161,70 @@ public struct CartsController: RouteCollection {
     
     /// Handles deleting a cart entry from a user's cart.
     ///
-    /// The cart entry id is received and the corresponding cart entry and option entries are deleted from the database.
+    /// The cart entry id is received and the corresponding food-cart relationship is detached on the database.
+    /// This automatically deletes the cart entry and option entries relating the two tables.
     /// - Parameter req: The request received.
     /// - Returns: An `HTTPStatus` showing whether the deletion was successful.
     func deleteItemHandler(_ req: Request) async throws -> HTTPStatus {
-        let _ = try req.auth.require(User.self)
+        let user = try req.auth.require(User.self)
+        
+        guard let id = user.id else {
+            throw Abort(.internalServerError)
+        }
+        
+        // Getting the user's cart.
+        let cartQuery = Cart.query(on: req.db)
+            .filter(\.$user.$id == id)
+            .first()
+            .unwrap(or: Abort(.internalServerError))
+        
         
         // Decoding the data sent to identify the cart entry to delete.
         let removeData = try req.content.decode(RemoveFromCartData.self)
         
-        // Gets the cart entry and deletes from the database
-        let deleteCartEntry = CartEntry.find(removeData.cartEntryID, on: req.db)
+        // Getting the corresponding cart entry
+        let cartEntryQuery = CartEntry.find(removeData.cartEntryID, on: req.db)
             .unwrap(or: Abort(.notFound))
-            .map { entry in
-                entry.delete(on: req.db)
-            }
         
-        // Gets the related option entries and deletes from the database
-        let deleteOptionEntries = OptionEntry.query(on: req.db)
-            .filter(\.$cartEntry.$id == removeData.cartEntryID)
-            .all()
-            .map { entries in
-                entries.map { $0.delete(on: req.db) }
+        return try await cartQuery.and(cartEntryQuery)
+            .flatMap { cart, cartEntry in
+                
+                // Getting the related food item and detaching from the user's cart.
+                cartEntry.$food.get(on: req.db)
+                    .map { food in
+                        return cart.$contents.detach(food, on: req.db)
+                    }
             }
+        // Returning an ok status
+            .transform(to: .ok)
+            .get()
+    }
+    
+    /// Handles clearing the contents of the user's cart.
+    ///
+    /// Simply detaches all the food items
+    /// - Parameter req: The request received
+    /// - Returns: An `HTTPStatus` showing whether the deletion was successful.
+    func clearContentsHandler(_ req: Request) async throws -> HTTPStatus {
+        let user = try req.auth.require(User.self)
+        guard let id = user.id else {
+            throw Abort(.internalServerError)
+        }
         
-        // Chaining the two operations and returning an ok status.
-        return try await deleteCartEntry.and(deleteOptionEntries)
-            .transform(to: HTTPStatus.ok)
+        let cartQuery = Cart.query(on: req.db)
+            .filter(\.$user.$id == id)
+            .first()
+            .unwrap(or: Abort(.internalServerError))
+        
+        return try await cartQuery
+            .flatMap { cart in
+                cart.$contents.get(on: req.db)
+                    .flatMap { items in
+                        return cart.$contents.detach(items, on: req.db)
+                    }
+                
+            }
+            .transform(to: .ok)
             .get()
     }
     
