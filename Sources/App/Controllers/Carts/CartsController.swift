@@ -19,6 +19,7 @@ public struct CartsController: RouteCollection {
         
         protectedRoute.get(use: getHandler)
         protectedRoute.post(use: addItemHandler)
+        protectedRoute.delete(use: deleteItemHandler)
     }
     
     /// Handles a `GET` request for the user's cart.
@@ -153,6 +154,39 @@ public struct CartsController: RouteCollection {
                         }
                     }
             }
+            .get()
+    }
+    
+    
+    /// Handles deleting a cart entry from a user's cart.
+    ///
+    /// The cart entry id is received and the corresponding cart entry and option entries are deleted from the database.
+    /// - Parameter req: The request received.
+    /// - Returns: An `HTTPStatus` showing whether the deletion was successful.
+    func deleteItemHandler(_ req: Request) async throws -> HTTPStatus {
+        let _ = try req.auth.require(User.self)
+        
+        // Decoding the data sent to identify the cart entry to delete.
+        let removeData = try req.content.decode(RemoveFromCartData.self)
+        
+        // Gets the cart entry and deletes from the database
+        let deleteCartEntry = CartEntry.find(removeData.cartEntryID, on: req.db)
+            .unwrap(or: Abort(.notFound))
+            .map { entry in
+                entry.delete(on: req.db)
+            }
+        
+        // Gets the related option entries and deletes from the database
+        let deleteOptionEntries = OptionEntry.query(on: req.db)
+            .filter(\.$cartEntry.$id == removeData.cartEntryID)
+            .all()
+            .map { entries in
+                entries.map { $0.delete(on: req.db) }
+            }
+        
+        // Chaining the two operations and returning an ok status.
+        return try await deleteCartEntry.and(deleteOptionEntries)
+            .transform(to: HTTPStatus.ok)
             .get()
     }
     

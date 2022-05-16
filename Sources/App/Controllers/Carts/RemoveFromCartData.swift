@@ -15,6 +15,6 @@ public extension CartsController {
     struct RemoveFromCartData: Content {
         
         /// The id of the cart entry to delete
-        let id: UUID
+        let cartEntryID: UUID
     }
 }
