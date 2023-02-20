@@ -1,5 +1,5 @@
 # SwiftCafeAPI
-A Server-Side Swift backend for the SwiftCafe food delivery app.
+A Server-Side Swift backend for a food delivery app.
 Built using Vapor and a PostgreSQL database.
 
 <br>
